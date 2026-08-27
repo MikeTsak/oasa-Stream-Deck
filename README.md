@@ -5,10 +5,12 @@ A powerful and highly customizable Stream Deck plugin for tracking live bus arri
 ## Features
 
 - 🕒 **Live ETAs**: Real-time arrival estimates straight from OASA.
+- 📅 **Scheduled Fallback**: If a live ETA isn't available, the plugin automatically fetches and displays the upcoming scheduled terminal departures.
 - 🎨 **Visual Customization**: Dynamically overrides colors and labels for specific bus lines (e.g., color-code express lines).
 - 🔄 **Multiple Stops**: Configure up to 5 different stops on a single button.
-- 📱 **Pagination**: Automatically paginates if more than 2 buses are arriving. Just press the button to scroll!
-- ⚡ **Instant Refresh**: Hold the button for 5 seconds to force a hard refresh from the API, complete with a visual countdown.
+- 📱 **Smooth Pagination**: Automatically paginates if more than 2 buses are arriving. Just press the button to smoothly scroll to the next page!
+- ⏳ **Loading Animations**: Displays a custom animated spinning loader directly on the key while fetching data from the API.
+- ⚡ **Instant Refresh**: Hold the button for 5 seconds to force a hard refresh from the API, complete with a visual countdown overlay.
 - 🔧 **Dummy Mode**: A built-in testing toggle to configure colors and UI without waiting for actual bus data.
 
 ## Installation
@@ -37,7 +39,7 @@ Completely customize how lines look on your button using the `LineID,Color,Custo
 ```
 
 ### Controls Summary
-- **Short Press**: Scrolls to the next page of buses (if more than 2 are arriving).
+- **Short Press**: Smoothly scrolls to the next page of buses (if more than 2 are arriving).
 - **Double Tap**: Cycles to the next configured secondary stop.
 - **Long Press (Hold for 5s)**: Triggers an expanding circle animation and forces an immediate API refresh.
 
@@ -54,6 +56,9 @@ npm run watch
 
 # Build for production
 npm run build
+
+# Pack into a .streamDeckPlugin file
+npm run pack
 ```
 
 ---

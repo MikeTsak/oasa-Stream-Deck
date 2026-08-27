@@ -38,6 +38,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 	private hasHardRefreshed: Map<string, boolean> = new Map();
 	private hasDoubleTapped: Map<string, boolean> = new Map();
 	private singleTapTimeout: Map<string, NodeJS.Timeout> = new Map();
+	private loadingAnimationInterval: Map<string, NodeJS.Timeout> = new Map();
 
 	private getActiveStopCode(settings: BusSettings, index: number): string | undefined {
 		const stops = [settings.stopCode, settings.stopCode2, settings.stopCode3, settings.stopCode4, settings.stopCode5];
@@ -76,6 +77,11 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		if (pendingTap) {
 			clearTimeout(pendingTap);
 			this.singleTapTimeout.delete(ev.action.id);
+		}
+		const loadingInterval = this.loadingAnimationInterval.get(ev.action.id);
+		if (loadingInterval) {
+			clearInterval(loadingInterval);
+			this.loadingAnimationInterval.delete(ev.action.id);
 		}
 	}
 
@@ -277,8 +283,20 @@ export class BusArrival extends SingletonAction<BusSettings> {
 
 	private async fetchAndUpdate(actionObj: KeyAction<BusSettings> | DialAction<BusSettings>, settings: BusSettings) {
 		if (actionObj.isKey()) {
-			const loadingSvg = this.generateLoadingSVG();
-			await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(loadingSvg)}`);
+			let frame = 0;
+			// Draw first frame immediately
+			const initialSvg = this.generateLoadingSVG(0, 0.6);
+			await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(initialSvg)}`).catch(() => {});
+			
+			const loadingInterval = setInterval(async () => {
+				frame++;
+				const rotation = (frame * 15) % 360;
+				// Math.sin goes -1 to 1. We want opacity between 0.15 and 0.6
+				const pulse = 0.15 + (Math.sin(frame * 0.2) + 1) * 0.225;
+				const loadingSvg = this.generateLoadingSVG(rotation, pulse);
+				await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(loadingSvg)}`).catch(() => {});
+			}, 50); // ~20fps
+			this.loadingAnimationInterval.set(actionObj.id, loadingInterval);
 		}
 
 		let data: BusData[] = [];
@@ -430,6 +448,12 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		const page = this.currentPage.get(actionObj.id) || 0;
 		
 		if (actionObj.isKey()) {
+			const interval = this.loadingAnimationInterval.get(actionObj.id);
+			if (interval) {
+				clearInterval(interval);
+				this.loadingAnimationInterval.delete(actionObj.id);
+			}
+
 			await actionObj.setTitle(""); 
 			if (hasError) {
 				const svg = this.generateErrorSVG(errorMessage);
@@ -441,7 +465,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		}
 	}
 
-	private generateLoadingSVG(): string {
+	private generateLoadingSVG(rotation: number = 0, pulse: number = 0.6): string {
 		const W = 144, H = 144;
 		let svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
 		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
@@ -450,14 +474,12 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		svg += `<circle cx="72" cy="66" r="28" fill="none" stroke="#111827" stroke-width="2" />`;
 		// Animated arc spinner
 		svg += `
-			<circle cx="72" cy="66" r="28" fill="none" stroke="#00E5FF" stroke-width="2.5" stroke-dasharray="30 146" stroke-linecap="round">
-				<animateTransform attributeName="transform" type="rotate" from="0 72 66" to="360 72 66" dur="1s" repeatCount="indefinite" />
+			<circle cx="72" cy="66" r="28" fill="none" stroke="#00E5FF" stroke-width="2.5" stroke-dasharray="30 146" stroke-linecap="round" transform="rotate(${rotation} 72 66)">
 			</circle>
 		`;
 		// Pulsing inner dot
 		svg += `
-			<circle cx="72" cy="66" r="3" fill="#00E5FF" opacity="0.6">
-				<animate attributeName="opacity" values="0.6;0.15;0.6" dur="1.5s" repeatCount="indefinite" />
+			<circle cx="72" cy="66" r="3" fill="#00E5FF" opacity="${pulse}">
 			</circle>
 		`;
 		// Label

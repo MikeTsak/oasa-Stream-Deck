@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html>
-
 <head lang="en">
     <title>Bus Arrival Settings</title>
     <meta charset="utf-8" />
     <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
 </head>
-
 <body>
-    <!--
-        Learn more about property inspector components at https://sdpi-components.dev/docs/components
-    -->
     <sdpi-item label="Stop Code">
-        <sdpi-textfield setting="stopCode" placeholder="Enter stop code..."></sdpi-textfield>
+        <sdpi-textfield setting="stopCode" placeholder="Enter stop code (e.g. 070106)"></sdpi-textfield>
     </sdpi-item>
-</body>
 
+    <sdpi-item label="Line Filters">
+        <sdpi-textfield setting="lineFilters" placeholder="Lines (e.g. 856, 815)"></sdpi-textfield>
+    </sdpi-item>
+
+    <div style="padding: 10px; color: #888; font-size: 11px; font-family: sans-serif;">
+        <p><strong>Stop Code:</strong> The 6-digit code for the OASA stop.</p>
+        <p><strong>Line Filters:</strong> Comma-separated list of bus lines (e.g. "856, 815") to prioritize on the display. If empty, the first two arriving lines are shown.</p>
+    </div>
+</body>
 </html>

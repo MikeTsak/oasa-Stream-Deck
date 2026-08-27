@@ -1,0 +1,47 @@
+{
+	"Name": "Oasa-Bus",
+	"Version": "0.1.0.0",
+	"Author": "MikeTsak.gr",
+	"Actions": [
+		{
+			"Name": "Bus Arrival",
+			"UUID": "com.miketsakgr.oasa-bus.arrival",
+			"Icon": "imgs/actions/counter/icon",
+			"Tooltip": "Displays bus arrival time",
+			"PropertyInspectorPath": "ui/bus-arrival.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/counter/key",
+					"TitleAlignment": "middle"
+				}
+			]
+		}
+	],
+	"Category": "Oasa-Bus",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "A plugin that tells you when the next bus is coming on your stop",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 3,
+	"Software": {
+		"MinimumVersion": "7.1"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "12"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "24",
+		"Debug": "enabled"
+	},
+	"UUID": "com.miketsakgr.oasa-bus"
+}

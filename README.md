@@ -1,49 +1,60 @@
-# OASA Bus Stream Deck Plugin
+# OASA Bus Arrival - Stream Deck Plugin 🚌
 
-A custom Elgato Stream Deck plugin that provides real-time bus arrivals for the Athens public transit network (OASA). Built with the official Node.js SDK and TypeScript, featuring a dynamic "Material You" design interface on the Stream Deck buttons.
+A powerful and highly customizable Stream Deck plugin for tracking live bus arrivals in Athens (OASA Telematics). Get real-time updates directly on your Stream Deck buttons, complete with beautiful SVG rendering, multi-stop support, and color-coded lines.
 
 ## Features
-- **Real-Time Arrivals:** Displays live ETA for buses at a specific stop.
-- **Dynamic Material You UI:** Custom SVG rendering directly on the Stream Deck button.
-- **Pagination:** If more than two buses are arriving, **Short Press** the button to scroll through the list.
-- **Manual Refresh:** **Long Press** the button to force an immediate API refresh.
-- **Custom Styling:** Define specific colors and emojis/text per bus line through the Property Inspector.
-- **Debug Mode:** A "Dummy Content" toggle is available to test custom styles without waiting for real buses.
 
-## Installation & Setup
+- 🕒 **Live ETAs**: Real-time arrival estimates straight from OASA.
+- 🎨 **Visual Customization**: Dynamically overrides colors and labels for specific bus lines (e.g., color-code express lines).
+- 🔄 **Multiple Stops**: Configure up to 5 different stops on a single button.
+- 📱 **Pagination**: Automatically paginates if more than 2 buses are arriving. Just press the button to scroll!
+- ⚡ **Instant Refresh**: Hold the button for 5 seconds to force a hard refresh from the API, complete with a visual countdown.
+- 🔧 **Dummy Mode**: A built-in testing toggle to configure colors and UI without waiting for actual bus data.
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+## Installation
 
-2. Build and run in watch mode:
-   ```bash
-   npm run watch
-   ```
-   This will compile the TypeScript code into the `com.miketsakgr.oasa-bus.sdPlugin` folder and reload the Stream Deck software.
+1. Download the `.streamDeckPlugin` file from the [Releases](https://github.com/MikeTsak/oasa-Stream-Deck/releases).
+2. Double-click the file to install it into your Elgato Stream Deck software.
+3. Drag and drop the "OASA Bus" action onto your canvas.
 
-3. Drag the "Bus Arrival" action from your Stream Deck application onto a button.
+## Configuration & Usage
 
-## Configuration
+Once added to your Stream Deck, you can configure it via the Property Inspector:
 
-In the Stream Deck Property Inspector for this button, you can configure:
+### 1. Stop Codes
+- **Primary Stop Code**: Find your stop code from the OASA Telematics website (e.g., `070106`).
+- **Secondary Stops**: Add up to 4 additional stop codes. **Double-tap** the Stream Deck button to quickly cycle between them!
 
-- **Stop Code:** The 6-digit OASA stop code (e.g., `070106`).
-- **Line Filters:** A comma-separated list of lines you want to track (e.g., `856, 815`).
-- **Line Overrides:** Customize the visual appearance of specific lines. Format is `Line,Color,Text` (one per line). 
-  Example:
-  ```
-  856,#e34234,ΕΞΠΡΕΣ
-  815,#2c9e4b,🚌
-  ```
-- **Dummy content:** Check this box to populate the button with fake data, useful for testing your Line Overrides.
+### 2. Line Filters
+Only care about specific buses? Enter a comma-separated list of line IDs (e.g., `856, 815`) to prioritize them.
 
-## Technologies Used
-- [@elgato/streamdeck](https://www.npmjs.com/package/@elgato/streamdeck)
-- TypeScript
-- Dynamic SVG Generation
-- OASA Telematics API
+### 3. Line Overrides
+Completely customize how lines look on your button using the `LineID,Color,CustomText` format. Add one per line in the text area:
+```csv
+856,#e34234,ΕΞΠΡΕΣ
+815,#2c9e4b,🚌
+049,#004A77,PIRAEUS
+```
 
-## License
-MIT License
+### Controls Summary
+- **Short Press**: Scrolls to the next page of buses (if more than 2 are arriving).
+- **Double Tap**: Cycles to the next configured secondary stop.
+- **Long Press (Hold for 5s)**: Triggers an expanding circle animation and forces an immediate API refresh.
+
+## Development
+
+Built with TypeScript and standard SVG generation. No heavy native dependencies required.
+
+```bash
+# Install dependencies
+npm install
+
+# Build for development (watch mode)
+npm run watch
+
+# Build for production
+npm run build
+```
+
+---
+*Made with ❤️ by miketsak.gr*

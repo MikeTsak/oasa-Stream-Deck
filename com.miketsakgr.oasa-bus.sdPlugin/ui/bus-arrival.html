@@ -16,12 +16,36 @@
     </style>
 </head>
 <body>
-    <sdpi-item label="Stop Code">
-        <sdpi-textfield setting="stopCode" placeholder="070106"></sdpi-textfield>
+    <sdpi-item label="Primary Stop Code">
+        <sdpi-textfield setting="stopCode" placeholder="070106 (Default)"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Secondary Stop 2">
+        <sdpi-textfield setting="stopCode2" placeholder="(Optional)"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Secondary Stop 3">
+        <sdpi-textfield setting="stopCode3" placeholder="(Optional)"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Secondary Stop 4">
+        <sdpi-textfield setting="stopCode4" placeholder="(Optional)"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Secondary Stop 5">
+        <sdpi-textfield setting="stopCode5" placeholder="(Optional)"></sdpi-textfield>
     </sdpi-item>
 
     <sdpi-item label="Line Filters">
         <sdpi-textfield setting="lineFilters" placeholder="e.g. 856, 815"></sdpi-textfield>
+    </sdpi-item>
+
+    <sdpi-item label="Bus 1 Color">
+        <input type="color" setting="busColor1" value="#004A77" />
+    </sdpi-item>
+
+    <sdpi-item label="Bus 2 Color">
+        <input type="color" setting="busColor2" value="#E3963E" />
     </sdpi-item>
 
     <sdpi-item label="Line Overrides">
@@ -41,8 +65,16 @@
         <h4>Controls & Tutorial</h4>
         <ul>
             <li><strong>Short Press:</strong> Scrolls to the next page of buses (if more than 2 are arriving).</li>
+            <li><strong>Double Tap:</strong> Cycles to the next configured secondary stop.</li>
             <li><strong>Long Press (Hold):</strong> Forces an immediate API refresh.</li>
             <li><strong>Dummy Content:</strong> Use this toggle for testing and debugging colors without waiting for the API.</li>
+        </ul>
+    </div>
+
+    <div class="tutorial-box" style="margin-top: 10px;">
+        <h4>Useful Links</h4>
+        <ul>
+            <li><a href="#" onclick="window.open('https://github.com/MikeTsak/oasa-Stream-Deck'); return false;" style="color: #4da6ff; text-decoration: none;">GitHub Repository & Full README</a></li>
         </ul>
     </div>
 </body>

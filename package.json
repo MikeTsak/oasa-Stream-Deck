@@ -2,7 +2,7 @@
     "scripts": {
         "build": "rollup -c",
         "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.miketsakgr.oasa-bus\"",
-        "pack": "streamdeck pack com.miketsakgr.oasa-bus.sdPlugin"
+        "pack": "streamdeck pack com.miketsakgr.oasa-bus.sdPlugin -f"
     },
     "type": "module",
     "devDependencies": {

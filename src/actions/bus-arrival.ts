@@ -173,10 +173,10 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				
 				// Inject animation overlay
 				const overlay = `
-					<rect x="0" y="0" width="144" height="144" fill="#0F172A" opacity="0.85" />
+					<rect x="0" y="0" width="144" height="144" fill="#020617" opacity="0.85" />
 					<circle cx="72" cy="72" r="${progress * 110}" fill="#10B981" />
-					<text x="72" y="68" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Hold 5s</text>
-					<text x="72" y="86" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">to refresh</text>
+					<text x="72" y="68" font-family="Inter, Roboto, sans-serif" font-size="14" font-weight="900" fill="#FFFFFF" text-anchor="middle">Hold 5s</text>
+					<text x="72" y="86" font-family="Inter, Roboto, sans-serif" font-size="12" font-weight="900" fill="#FFFFFF" text-anchor="middle">to refresh</text>
 				`;
 				const animSvg = baseSvg.replace("</svg>", overlay + "</svg>");
 				await ev.action.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(animSvg)}`);
@@ -289,18 +289,18 @@ export class BusArrival extends SingletonAction<BusSettings> {
 			const activeIndex = this.activeStopIndex.get(actionObj.id) || 0;
 			if (activeIndex === 0) {
 				data = [
-					{ lineId: "856", etaMinutes: "5", destination: "ΠΡΟΣ ΑΙΓΑΛΕΩ", routeCode: "1234", scheduledTerminalDepartures: ["21:10"] },
-					{ lineId: "A15", etaMinutes: null, destination: "ΠΡΟΣ ΣΤΑΘ.ΛΑΡΙΣΗΣ", routeCode: "5678", scheduledTerminalDepartures: ["21:15"] },
-					{ lineId: "815", etaMinutes: "25", destination: "ΠΡΟΣ ΓΟΥΔΗ", routeCode: "9012", scheduledTerminalDepartures: ["21:45"] }
+					{ lineId: "856", etaMinutes: "5", destination: "ΠΡΟΣ ΑΙΓΑΛΕΩ", routeCode: "1234", scheduledTerminalDepartures: ["21:10", "21:40"] },
+					{ lineId: "A15", etaMinutes: null, destination: "ΠΡΟΣ ΣΤΑΘ.ΛΑΡΙΣΗΣ", routeCode: "5678", scheduledTerminalDepartures: ["21:15", "21:45", "22:15"] },
+					{ lineId: "815", etaMinutes: "25", destination: "ΠΡΟΣ ΓΟΥΔΗ", routeCode: "9012", scheduledTerminalDepartures: ["21:45", "22:30"] }
 				];
 			} else if (activeIndex === 1) {
 				data = [
-					{ lineId: "040", etaMinutes: "2", destination: "ΠΕΙΡΑΙΑΣ - ΣΥΝΤΑΓΜΑ", routeCode: "111", scheduledTerminalDepartures: [] },
-					{ lineId: "049", etaMinutes: "10", destination: "ΠΕΙΡΑΙΑΣ - ΟΜΟΝΟΙΑ", routeCode: "222", scheduledTerminalDepartures: [] }
+					{ lineId: "040", etaMinutes: "2", destination: "ΠΕΙΡΑΙΑΣ - ΣΥΝΤΑΓΜΑ", routeCode: "111", scheduledTerminalDepartures: ["01:50", "02:20"] },
+					{ lineId: "049", etaMinutes: "10", destination: "ΠΕΙΡΑΙΑΣ - ΟΜΟΝΟΙΑ", routeCode: "222", scheduledTerminalDepartures: ["02:00", "02:35"] }
 				];
 			} else {
 				data = [
-					{ lineId: "X95", etaMinutes: "15", destination: "ΣΥΝΤΑΓΜΑ - ΑΕΡΟΔΡΟΜΙΟ", routeCode: "333", scheduledTerminalDepartures: [] }
+					{ lineId: "X95", etaMinutes: "15", destination: "ΣΥΝΤΑΓΜΑ - ΑΕΡΟΔΡΟΜΙΟ", routeCode: "333", scheduledTerminalDepartures: ["02:10", "02:50"] }
 				];
 			}
 		} else {
@@ -442,237 +442,345 @@ export class BusArrival extends SingletonAction<BusSettings> {
 	}
 
 	private generateLoadingSVG(): string {
-		const width = 144;
-		const height = 144;
-		let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
-		svg += `<rect width="100%" height="100%" fill="#0A0A0A" />`;
-		const cx = 72; const cy = 72; const r = 24;
+		const W = 144, H = 144;
+		let svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
+
+		// Outer subtle ring
+		svg += `<circle cx="72" cy="66" r="28" fill="none" stroke="#111827" stroke-width="2" />`;
+		// Animated arc spinner
 		svg += `
-			<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#222" stroke-width="4" />
-			<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#FFBF00" stroke-width="4" stroke-dasharray="40 110" stroke-linecap="round">
-				<animateTransform attributeName="transform" type="rotate" from="0 ${cx} ${cy}" to="360 ${cx} ${cy}" dur="1.2s" repeatCount="indefinite" />
+			<circle cx="72" cy="66" r="28" fill="none" stroke="#00E5FF" stroke-width="2.5" stroke-dasharray="30 146" stroke-linecap="round">
+				<animateTransform attributeName="transform" type="rotate" from="0 72 66" to="360 72 66" dur="1s" repeatCount="indefinite" />
 			</circle>
 		`;
+		// Pulsing inner dot
+		svg += `
+			<circle cx="72" cy="66" r="3" fill="#00E5FF" opacity="0.6">
+				<animate attributeName="opacity" values="0.6;0.15;0.6" dur="1.5s" repeatCount="indefinite" />
+			</circle>
+		`;
+		// Label
+		svg += `<text x="72" y="108" font-family="Inter,Roboto,sans-serif" font-size="8" font-weight="700" fill="#374151" text-anchor="middle" letter-spacing="2.5">LOADING</text>`;
+
 		svg += `</svg>`;
 		return svg;
 	}
 
 	private generateErrorSVG(errorMessage: string): string {
-		const width = 144;
-		const height = 144;
-		let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
-		svg += `<rect width="100%" height="100%" fill="#1D1515" />`;
+		const W = 144, H = 144;
+		let svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
+
+		// Error glow circle
+		svg += `<circle cx="72" cy="54" r="28" fill="#450a0a" opacity="0.35" />`;
+		// Warning icon — outlined triangle
 		svg += `
-			<path d="M72 35 L40 90 L104 90 Z" fill="none" stroke="#F2B8B5" stroke-width="4" stroke-linejoin="round" />
-			<line x1="72" y1="55" x2="72" y2="72" stroke="#F2B8B5" stroke-width="4" stroke-linecap="round" />
-			<circle cx="72" cy="82" r="2.5" fill="#F2B8B5" />
-			<text x="72" y="110" font-family="sans-serif" font-size="9" font-weight="bold" fill="#F2B8B5" text-anchor="middle">ΣΦΑΛΜΑ OASA API</text>
+			<path d="M72 32 L48 78 L96 78 Z" fill="none" stroke="#EF4444" stroke-width="2" stroke-linejoin="round" opacity="0.7" />
+			<path d="M72 36 L52 74 L92 74 Z" fill="#0C0406" />
+			<line x1="72" y1="50" x2="72" y2="63" stroke="#EF4444" stroke-width="3" stroke-linecap="round" />
+			<circle cx="72" cy="69" r="2" fill="#EF4444" />
 		`;
-		
+
+		// Error title
+		svg += `<text x="72" y="96" font-family="Inter,Roboto,sans-serif" font-size="9" font-weight="800" fill="#EF4444" text-anchor="middle" letter-spacing="1">ΣΦΑΛΜΑ OASA</text>`;
+
+		// Error details (word-wrapped)
 		const words = errorMessage.split(' ');
 		const half = Math.ceil(words.length / 2);
 		const line1 = words.slice(0, half).join(' ');
 		const line2 = words.slice(half).join(' ');
 		if (line2.length > 0) {
-			svg += `<text x="72" y="124" font-family="sans-serif" font-size="6" font-weight="normal" fill="#C4C7C5" text-anchor="middle">${line1}</text>`;
-			svg += `<text x="72" y="132" font-family="sans-serif" font-size="6" font-weight="normal" fill="#C4C7C5" text-anchor="middle">${line2}</text>`;
+			svg += `<text x="72" y="112" font-family="Inter,Roboto,sans-serif" font-size="7" font-weight="500" fill="#6B7280" text-anchor="middle">${line1}</text>`;
+			svg += `<text x="72" y="122" font-family="Inter,Roboto,sans-serif" font-size="7" font-weight="500" fill="#6B7280" text-anchor="middle">${line2}</text>`;
 		} else {
-			svg += `<text x="72" y="124" font-family="sans-serif" font-size="6" font-weight="normal" fill="#C4C7C5" text-anchor="middle">${line1}</text>`;
+			svg += `<text x="72" y="112" font-family="Inter,Roboto,sans-serif" font-size="7" font-weight="500" fill="#6B7280" text-anchor="middle">${line1}</text>`;
 		}
+
+		// Pulsing retry hint
+		svg += `
+			<text x="72" y="137" font-family="Inter,Roboto,sans-serif" font-size="7" font-weight="600" fill="#374151" text-anchor="middle" letter-spacing="1">
+				HOLD 5s TO RETRY
+				<animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite" />
+			</text>
+		`;
 
 		svg += `</svg>`;
 		return svg;
 	}
 
 	private generateLedSVG(allLines: BusData[], page1: number, page2: number, offsetY: number, rawConfigs?: string, busColor1?: string, busColor2?: string, actionId?: string): string {
-		const width = 144;
-		const height = 144;
-		
-		let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`;
+		const W = 144, H = 144;
+		const panelHeight = 56;
 
-		// 1. Absolute Reset (The Artifact Killer)
-		// We use a solid 144x144 opaque dark hex color as the base to prevent any ghosting or bleeding
-		// FIX: Use 144 instead of 100% to avoid Qt SVG parser treating it as 100 pixels!
-		svg += `<rect width="144" height="144" fill="#0F172A" />`;
+		let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">`;
 
+		// ═══════════════════════════════════════════════════════
+		// DEFS — Gradients, filters, and reusable elements
+		// ═══════════════════════════════════════════════════════
+		svg += `
+		<defs>
+			<linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+				<stop offset="0%" stop-color="#111827" />
+				<stop offset="100%" stop-color="#0A0F18" />
+			</linearGradient>
+			<linearGradient id="schedBox" x1="0%" y1="0%" x2="0%" y2="100%">
+				<stop offset="0%" stop-color="#0F1520" />
+				<stop offset="100%" stop-color="#080D14" />
+			</linearGradient>
+			<linearGradient id="sepFade" x1="0%" y1="0%" x2="100%" y2="0%">
+				<stop offset="0%" stop-color="#020408" />
+				<stop offset="25%" stop-color="#1F2937" />
+				<stop offset="75%" stop-color="#1F2937" />
+				<stop offset="100%" stop-color="#020408" />
+			</linearGradient>
+		</defs>
+		`;
+
+		// Background — true OLED black with a hair of cold blue
+		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
+
+		// ═══════════════════════════════════════════════════════
+		// EMPTY STATE
+		// ═══════════════════════════════════════════════════════
 		if (allLines.length === 0) {
-			svg += `<text x="72" y="72" font-family="Consolas, monospace" font-size="14" font-weight="bold" fill="#FFBF00" text-anchor="middle">NO DATA</text>`;
+			svg += `
+				<text x="72" y="64" font-family="Inter,Roboto,sans-serif" font-size="12" font-weight="800" fill="#1F2937" text-anchor="middle" letter-spacing="3">NO DATA</text>
+				<circle cx="72" cy="84" r="3" fill="none" stroke="#1F2937" stroke-width="1.5">
+					<animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite" />
+					<animate attributeName="opacity" values="0.8;0.1;0.8" dur="2s" repeatCount="indefinite" />
+				</circle>
+			`;
 			svg += `</svg>`;
 			return svg;
 		}
 
+		// ═══════════════════════════════════════════════════════
+		// SETUP
+		// ═══════════════════════════════════════════════════════
 		let fetchTime = 0;
 		if (actionId && this.lastFetchTime.has(actionId)) {
 			fetchTime = this.lastFetchTime.get(actionId) || 0;
 		}
 
-		// Scrolling Group
-		svg += `<g transform="translate(0, ${-offsetY})">`;
-		
-		const panelHeight = 60;
-		const c1 = busColor1 || "#004A77";
-		const c2 = busColor2 || "#E3963E";
-		
-		// Parse configs once
+		const getSafeSize = (text: string, maxW: number, defaultSize: number, w: number = 0.6): number => {
+			const est = text.length * (defaultSize * w);
+			return est > maxW ? Math.floor(defaultSize * (maxW / est)) : defaultSize;
+		};
+
+		const c1 = busColor1 || "#00E5FF";
+		const c2 = busColor2 || "#FF6B00";
+
+		// Parse line configs
 		const configs = new Map<string, { color: string, text: string }>();
 		if (rawConfigs) {
-			const lines = rawConfigs.split('\n');
-			for (const l of lines) {
-				const parts = l.split(',');
-				if (parts.length >= 3) {
-					configs.set(parts[0].trim(), { color: parts[1].trim(), text: parts[2].trim() });
-				}
+			for (const l of rawConfigs.split('\n')) {
+				const p = l.split(',');
+				if (p.length >= 3) configs.set(p[0].trim(), { color: p[1].trim(), text: p[2].trim() });
 			}
 		}
 
-		const drawSeparator = (yPos: number) => {
-			return `<line x1="8" y1="${yPos}" x2="136" y2="${yPos}" stroke="#0077FF" stroke-width="1.5" />`;
-		};
+		// ═══════════════════════════════════════════════════════
+		// SCROLLING GROUP
+		// ═══════════════════════════════════════════════════════
+		svg += `<g transform="translate(0, ${-offsetY})">`;
 
-		const getSlotType = (pageIndex: number, slotIndex: number): 'bus' | 'credits' | 'empty' => {
-			const index = pageIndex * 2 + slotIndex;
-			if (index < allLines.length) return 'bus';
-			if (index === allLines.length) return 'credits';
+		// ───────────────────────────────────────────────────────
+		// SLOT HELPERS
+		// ───────────────────────────────────────────────────────
+		const getSlotType = (pg: number, sl: number): 'bus' | 'credits' | 'empty' => {
+			const idx = pg * 2 + sl;
+			if (idx < allLines.length) return 'bus';
+			if (idx === allLines.length) return 'credits';
 			return 'empty';
 		};
 
-		const drawCreditsBlock = (virtualIndex: number) => {
-			const y = 6 + (virtualIndex * (panelHeight + 12)); 
-			let timeStr = "--:--";
+		const drawSeparator = (yPos: number) =>
+			`<line x1="20" y1="${yPos}" x2="124" y2="${yPos}" stroke="url(#sepFade)" stroke-width="1" />`;
+
+		// ───────────────────────────────────────────────────────
+		// CREDITS BLOCK
+		// ───────────────────────────────────────────────────────
+		const drawCreditsBlock = (vi: number) => {
+			const y = 8 + (vi * (panelHeight + 12));
+			const mid = y + panelHeight / 2;
+			let ts = "--:--";
 			if (fetchTime > 0) {
 				const d = new Date(fetchTime);
-				timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+				ts = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 			}
-			
 			return `
-				<rect x="4" y="${y}" width="136" height="${panelHeight}" fill="#111B2C" rx="6" stroke="#1E293B" stroke-width="1" />
-				<text x="72" y="${y + 24}" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#00AAFF" text-anchor="middle">Made by</text>
-				<text x="72" y="${y + 38}" font-family="Consolas, monospace" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">miketsak.gr</text>
-				<text x="72" y="${y + 52}" font-family="Arial, sans-serif" font-size="9" fill="#888888" text-anchor="middle">Updated: ${timeStr}</text>
+				<rect x="8" y="${y + 2}" width="128" height="${panelHeight}" fill="#000" opacity="0.45" rx="10" />
+				<rect x="8" y="${y}" width="128" height="${panelHeight}" fill="url(#cardBg)" rx="10" stroke="#1B2332" stroke-width="0.5" stroke-opacity="0.5" />
+				<rect x="11" y="${y + 6}" width="3" height="${panelHeight - 12}" rx="1.5" fill="#6366F1" opacity="0.5" />
+				<text x="72" y="${mid - 10}" font-family="Inter,Roboto,sans-serif" font-size="8" font-weight="500" fill="#484F58" text-anchor="middle" letter-spacing="1.5">MADE BY</text>
+				<text x="72" y="${mid + 4}" font-family="Inter,Roboto,sans-serif" font-size="13" font-weight="900" fill="#F0F6FC" text-anchor="middle">miketsak.gr</text>
+				<text x="72" y="${mid + 18}" font-family="Inter,Roboto,sans-serif" font-size="8" font-weight="400" fill="#374151" text-anchor="middle">${ts}</text>
 			`;
 		};
 
-		const drawBlock = (line: BusData, virtualIndex: number) => {
-			const y = 6 + (virtualIndex * (panelHeight + 12)); 
-			const lineConf = configs.get(line.lineId);
-			const defaultColor = (virtualIndex % 2 === 0) ? c1 : c2;
-			const pillColor = lineConf ? lineConf.color : defaultColor;
-			const pillText = lineConf ? lineConf.text : line.lineId;
-			
-			let blockSvg = ``;
-			
-			// 1. LEFT COLUMN (25%): Molded Line Block
-			blockSvg += `
-				<rect x="4" y="${y}" width="34" height="${panelHeight}" fill="${pillColor}" rx="6" />
-				<text x="21" y="${y + 36}" font-family="Impact, Arial Black, sans-serif" font-size="16" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">${pillText}</text>
-			`;
+		// ───────────────────────────────────────────────────────
+		// BUS BLOCK (the core visual)
+		// ───────────────────────────────────────────────────────
+		const drawBlock = (line: BusData, vi: number) => {
+			const y = 8 + (vi * (panelHeight + 12));
+			const mid = y + panelHeight / 2;
 
-			// 2. CENTER COLUMN (40%): Live ETA LED Display
-			let mainDisplay = "";
+			const lc = configs.get(line.lineId);
+			const accent = lc ? lc.color : ((vi % 2 === 0) ? c1 : c2);
+			const label  = lc ? lc.text  : line.lineId;
+
+			let s = '';
+
+			// ▸ Card shell: shadow + background + thin border
+			s += `<rect x="8" y="${y + 2}" width="128" height="${panelHeight}" fill="#000" opacity="0.45" rx="10" />`;
+			s += `<rect x="8" y="${y}" width="128" height="${panelHeight}" fill="url(#cardBg)" rx="10" stroke="#1B2332" stroke-width="0.5" stroke-opacity="0.5" />`;
+
+			// ▸ Accent bar — glowing vertical stripe on the left edge
+			s += `<rect x="11" y="${y + 6}" width="3" height="${panelHeight - 12}" rx="1.5" fill="${accent}" opacity="0.9" />`;
+			s += `<rect x="10" y="${y + 6}" width="5" height="${panelHeight - 12}" rx="2.5" fill="${accent}" opacity="0.12" />`;
+
+			// ▸ Line ID badge
+			const idSz = getSafeSize(label, 28, 12, 0.65);
+			const badgeW = Math.max(28, label.length * idSz * 0.55 + 12);
+			const badgeX = 18;
+			s += `<rect x="${badgeX}" y="${mid - 10}" width="${badgeW}" height="20" fill="#080C14" rx="5" />`;
+			s += `<text x="${badgeX + badgeW / 2}" y="${mid}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="${idSz}" font-weight="900" fill="${accent}" text-anchor="middle">${label}</text>`;
+
+			// ▸ Center — Main ETA display
+			// etaX sits at the visual center between badge right edge (~50) and right box (94)
+			const etaX = 74;
 			let isScheduledFallback = false;
-			let displayColor = "#FFBF00"; // Amber
-			let displaySize = 36;
-			let textYOffset = 46;
 
 			if (line.etaMinutes !== null) {
-				mainDisplay = `${parseInt(line.etaMinutes) || 0}`;
+				// ──── LIVE ETA ────
+				const mins = parseInt(line.etaMinutes) || 0;
+				const display = `${mins}`;
+				const sz = getSafeSize(display, 38, mins >= 100 ? 20 : (mins >= 10 ? 26 : 30), 0.65);
+
+				// Glow halo behind the number (accent-tinted)
+				s += `<circle cx="${etaX}" cy="${mid - 2}" r="16" fill="${accent}" opacity="0.06" />`;
+				// Stroke glow
+				s += `<text x="${etaX}" y="${mid - 3}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="${sz}" font-weight="900" fill="${accent}" opacity="0.15" text-anchor="middle" stroke="${accent}" stroke-width="4">${display}</text>`;
+				// Main number
+				s += `<text x="${etaX}" y="${mid - 3}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="${sz}" font-weight="900" fill="#F0F6FC" text-anchor="middle">${display}</text>`;
+				// "MIN" sublabel
+				s += `<text x="${etaX}" y="${mid + 12}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="7" font-weight="700" fill="#484F58" text-anchor="middle" letter-spacing="1.5">MIN</text>`;
+
+				// ▸ Proximity progress bar
+				const barY = y + panelHeight - 5;
+				const barX = 18;
+				const barMaxW = 66;
+				const pct = Math.max(0.08, Math.min(1, 1 - (mins / 40)));
+				const barW = Math.round(barMaxW * pct);
+				// Track
+				s += `<rect x="${barX}" y="${barY}" width="${barMaxW}" height="2" rx="1" fill="#111827" />`;
+				// Fill
+				s += `<rect x="${barX}" y="${barY}" width="${barW}" height="2" rx="1" fill="${accent}" opacity="0.55" />`;
+				// Bright tip
+				if (barW > 3) {
+					s += `<rect x="${barX + barW - 3}" y="${barY}" width="3" height="2" rx="1" fill="${accent}" />`;
+				}
 			} else {
-				mainDisplay = line.scheduledTerminalDepartures[0] || "--:--";
+				// ──── SCHEDULED FALLBACK ────
 				isScheduledFallback = true;
-				displayColor = "#FFFFFF";
-				displaySize = 16;
-				textYOffset = 40;
+				const schedDisplay = line.scheduledTerminalDepartures[0] || "--:--";
+				const sz = getSafeSize(schedDisplay, 40, 16, 0.65);
+
+				s += `<text x="${etaX}" y="${mid - 5}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="${sz}" font-weight="800" fill="#8B949E" text-anchor="middle">${schedDisplay}</text>`;
+				s += `<text x="${etaX}" y="${mid + 9}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="7" font-weight="700" fill="#374151" text-anchor="middle" letter-spacing="2">SCHED</text>`;
 			}
 
-			// Retro digital clock icon above ETA
-			blockSvg += `<text x="68" y="${y + 14}" font-family="Arial" font-size="10" fill="#666666" text-anchor="middle">⏱</text>`;
-
-			blockSvg += `
-				<text x="68" y="${y + textYOffset}" font-family="Consolas, Courier New, monospace" font-size="${displaySize}" font-weight="bold" fill="${displayColor}" text-anchor="middle" textLength="${isScheduledFallback ? 46 : 42}" lengthAdjust="spacingAndGlyphs">${mainDisplay}</text>
-			`;
-
+			// ▸ Right column — upcoming scheduled departures
+			let t1: string, t2: string;
 			if (isScheduledFallback) {
-				blockSvg += `<text x="68" y="${y + 54}" font-family="Arial, sans-serif" font-size="9" fill="#888" text-anchor="middle" letter-spacing="1">SCHED</text>`;
+				t1 = line.scheduledTerminalDepartures[1] || "";
+				t2 = line.scheduledTerminalDepartures[2] || "";
+			} else {
+				t1 = line.scheduledTerminalDepartures[0] || "";
+				t2 = line.scheduledTerminalDepartures[1] || "";
 			}
 
-			// 3. RIGHT COLUMN (35%): Schedule Gold Card
-			const rightAnchor = 136;
-			const t1 = line.scheduledTerminalDepartures[0] || "--:--";
-			const t2 = line.scheduledTerminalDepartures[1] || "";
-			
-			// Use solid OPAQUE hex colors for the background block
-			blockSvg += `
-				<rect x="92" y="${y + 2}" width="48" height="56" fill="#3d3321" rx="4" stroke="#4a3e26" stroke-width="1" />
-				<text x="${rightAnchor}" y="${y + 16}" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#FFE066" text-anchor="end">🚶 ${t1}</text>
-				<text x="${rightAnchor}" y="${y + 32}" font-family="Consolas, monospace" font-size="10" font-weight="bold" fill="#B0A692" text-anchor="end">⏱ ${t2}</text>
-				<text x="${116}" y="${y + 50}" font-family="Arial" font-size="9" fill="#888888" text-anchor="middle">📍 ΤΕΡΜΑ</text>
-			`;
-			
-			return blockSvg;
+			const rBoxX = 94, rBoxW = 38;
+			const rAnchor = rBoxX + rBoxW - 5;
+
+			// Right column box (always drawn for visual consistency)
+			s += `<rect x="${rBoxX}" y="${y + 8}" width="${rBoxW}" height="${panelHeight - 16}" rx="5" fill="url(#schedBox)" stroke="#1B2332" stroke-width="0.5" stroke-opacity="0.3" />`;
+
+			if (t1 && t2) {
+				s += `<text x="${rAnchor}" y="${mid - 6}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="9" font-weight="600" fill="#8B949E" text-anchor="end">${t1}</text>`;
+				s += `<text x="${rAnchor}" y="${mid + 7}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="9" font-weight="400" fill="#484F58" text-anchor="end">${t2}</text>`;
+			} else if (t1) {
+				s += `<text x="${rAnchor}" y="${mid}" dominant-baseline="middle" font-family="Inter,Roboto,sans-serif" font-size="9" font-weight="600" fill="#8B949E" text-anchor="end">${t1}</text>`;
+			} else {
+				// Empty — subtle dot
+				s += `<circle cx="${rBoxX + rBoxW / 2}" cy="${mid}" r="1.5" fill="#1F2937" />`;
+			}
+
+			return s;
 		};
 
-		// Render Page 1
+		// ═══════════════════════════════════════════════════════
+		// RENDER PAGES
+		// ═══════════════════════════════════════════════════════
 		for (let slot = 0; slot < 2; slot++) {
 			const type = getSlotType(page1, slot);
-			if (type === 'bus') {
-				svg += drawBlock(allLines[page1 * 2 + slot], slot);
-			} else if (type === 'credits') {
-				svg += drawCreditsBlock(slot);
-			}
+			if (type === 'bus') svg += drawBlock(allLines[page1 * 2 + slot], slot);
+			else if (type === 'credits') svg += drawCreditsBlock(slot);
 		}
 		if (getSlotType(page1, 1) !== 'empty') {
 			svg += drawSeparator(71);
 		}
 
-		// Render Page 2
 		if (page1 !== page2) {
 			for (let slot = 0; slot < 2; slot++) {
 				const type = getSlotType(page2, slot);
-				if (type === 'bus') {
-					svg += drawBlock(allLines[page2 * 2 + slot], slot + 2);
-				} else if (type === 'credits') {
-					svg += drawCreditsBlock(slot + 2);
-				}
+				if (type === 'bus') svg += drawBlock(allLines[page2 * 2 + slot], slot + 2);
+				else if (type === 'credits') svg += drawCreditsBlock(slot + 2);
 			}
 			if (getSlotType(page2, 1) !== 'empty') {
 				svg += drawSeparator(71 + 144);
 			}
 		}
 
-		svg += `</g>`;
+		svg += `</g>`; // end scroll group
 
-		// Draw bottom bar for API Scan/Fetch Status (outside scroll group so it stays fixed)
-
+		// ═══════════════════════════════════════════════════════
+		// FIXED BOTTOM BAR — Status + Pagination (outside scroll)
+		// ═══════════════════════════════════════════════════════
 		if (fetchTime > 0) {
-			// Status bar background 
-			svg += `<rect x="0" y="134" width="144" height="10" fill="#0F172A" />`;
-			
-			// Dot
 			const isFresh = (Date.now() - fetchTime) < 70000;
-			const statusColor = isFresh ? '#00FF00' : '#FFBF00';
-			svg += `<circle cx="8" cy="139" r="2.5" fill="${statusColor}" />`;
-
-			// Time text
+			const sColor = isFresh ? '#3FB950' : '#D29922';
+			const sLabel = isFresh ? 'LIVE' : 'STALE';
 			const d = new Date(fetchTime);
-			const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-			svg += `<text x="14" y="142" font-family="Arial" font-size="8" fill="#A0A0A0" text-anchor="start">Updated: ${timeStr}</text>`;
+			const ts = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+
+			svg += `
+				<text x="8" y="139" font-family="Inter,Roboto,sans-serif" font-size="8" font-weight="600" fill="#374151" text-anchor="start">
+					<tspan fill="${sColor}">●</tspan> <tspan fill="${sColor}">${sLabel}</tspan> ${ts}
+				</text>
+			`;
 		}
 
-		// Draw fixed pagination dots at the bottom right
+		// Pagination dots
 		const maxPages = Math.ceil((allLines.length + 1) / 2);
-		const activePage = (offsetY >= 72) ? page2 : page1; 
+		const activePage = (offsetY >= 72) ? page2 : page1;
 
 		if (maxPages > 1) {
-			const dotsY = 139; 
-			const dotSpacing = 12;
+			const dotsY = 139;
+			const dotSpacing = 10;
 			const dotsWidth = (maxPages - 1) * dotSpacing;
-			const startX = 144 - 6 - dotsWidth;
+			const startX = W - 8 - dotsWidth;
 
 			for (let p = 0; p < maxPages; p++) {
-				const isCurrent = p === activePage;
-				const dotX = startX + (p * dotSpacing);
-				const color = isCurrent ? "#00AAFF" : "#1e293b"; // Opaque solid inactive color
-				svg += `<circle cx="${dotX}" cy="${dotsY}" r="2.5" fill="${color}" />`;
+				const active = p === activePage;
+				const dx = startX + (p * dotSpacing);
+				if (active) {
+					// Active dot: accent-colored pill
+					svg += `<rect x="${dx - 5}" y="${dotsY - 2.5}" width="10" height="5" rx="2.5" fill="#00AAFF" />`;
+				} else {
+					svg += `<circle cx="${dx}" cy="${dotsY}" r="2" fill="#1F2937" />`;
+				}
 			}
 		}
 

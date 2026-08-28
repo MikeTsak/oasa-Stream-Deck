@@ -283,6 +283,13 @@ export class BusArrival extends SingletonAction<BusSettings> {
 
 	private async fetchAndUpdate(actionObj: KeyAction<BusSettings> | DialAction<BusSettings>, settings: BusSettings) {
 		if (actionObj.isKey()) {
+			// Clear any existing loading animation before starting a new one
+			const existingInterval = this.loadingAnimationInterval.get(actionObj.id);
+			if (existingInterval) {
+				clearInterval(existingInterval);
+				this.loadingAnimationInterval.delete(actionObj.id);
+			}
+
 			let frame = 0;
 			// Draw first frame immediately
 			const initialSvg = this.generateLoadingSVG(0, 0.6);
@@ -468,7 +475,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 	private generateLoadingSVG(rotation: number = 0, pulse: number = 0.6): string {
 		const W = 144, H = 144;
 		let svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
-		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
+		svg += `<rect width="${W}" height="${H}" fill="#000000" />`;
 
 		// Outer subtle ring
 		svg += `<circle cx="72" cy="66" r="28" fill="none" stroke="#111827" stroke-width="2" />`;
@@ -492,7 +499,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 	private generateErrorSVG(errorMessage: string): string {
 		const W = 144, H = 144;
 		let svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
-		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
+		svg += `<rect width="${W}" height="${H}" fill="#000000" />`;
 
 		// Error glow circle
 		svg += `<circle cx="72" cy="54" r="28" fill="#450a0a" opacity="0.35" />`;
@@ -551,16 +558,16 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				<stop offset="100%" stop-color="#080D14" />
 			</linearGradient>
 			<linearGradient id="sepFade" x1="0%" y1="0%" x2="100%" y2="0%">
-				<stop offset="0%" stop-color="#020408" />
+				<stop offset="0%" stop-color="#000000" />
 				<stop offset="25%" stop-color="#1F2937" />
 				<stop offset="75%" stop-color="#1F2937" />
-				<stop offset="100%" stop-color="#020408" />
+				<stop offset="100%" stop-color="#000000" />
 			</linearGradient>
 		</defs>
 		`;
 
 		// Background — true OLED black with a hair of cold blue
-		svg += `<rect width="${W}" height="${H}" fill="#020408" />`;
+		svg += `<rect width="${W}" height="${H}" fill="#000000" />`;
 
 		// ═══════════════════════════════════════════════════════
 		// EMPTY STATE

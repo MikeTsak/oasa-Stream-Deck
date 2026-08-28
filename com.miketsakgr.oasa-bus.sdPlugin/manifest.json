@@ -1,10 +1,10 @@
 {
-	"Name": "Oasa-Bus",
+	"Name": "OASA Bus Arrivals",
 	"Version": "0.1.0.0",
-	"Author": "MikeTsak.gr",
+	"Author": "MikeTsak",
 	"Actions": [
 		{
-			"Name": "Bus Arrival",
+			"Name": "OASA Bus Arrivals",
 			"UUID": "com.miketsakgr.oasa-bus.arrival",
 			"Icon": "imgs/actions/counter/icon",
 			"Tooltip": "Displays bus arrival time",
@@ -20,10 +20,10 @@
 			]
 		}
 	],
-	"Category": "Oasa-Bus",
+	"Category": "OASA Bus Arrivals",
 	"CategoryIcon": "imgs/plugin/category-icon",
 	"CodePath": "bin/plugin.js",
-	"Description": "A plugin that tells you when the next bus is coming on your stop",
+	"Description": "Track live OASA bus arrivals in Athens right from your Stream Deck.",
 	"Icon": "imgs/plugin/marketplace",
 	"SDKVersion": 3,
 	"Software": {

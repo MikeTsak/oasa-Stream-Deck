@@ -1,44 +1,166 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <title>Bus Arrival Settings</title>
+    <title>OASA Bus Arrivals Settings</title>
     <meta charset="utf-8" />
     <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; padding: 12px; }
-        .help-text { padding-top: 10px; color: #888; font-size: 12px; line-height: 1.4; }
-        .help-text p { margin-bottom: 8px; }
-        .tutorial-box { background: #282A2F; color: #E2E2E2; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #3e4149; }
-        .tutorial-box h4 { margin: 0 0 8px 0; color: #A8C7FA; }
-        .tutorial-box ul { padding-left: 20px; margin-bottom: 0; }
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            padding: 12px; 
+            color: #E2E2E2; 
+        }
+        
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #A0A0A0;
+            margin: 16px 0 8px 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+
+        details.settings-group {
+            margin: 12px 0;
+            background: #1e1f22;
+            border: 1px solid #2d2f36;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+        
+        details.settings-group summary {
+            font-size: 12px;
+            font-weight: 600;
+            color: #A8C7FA;
+            cursor: pointer;
+            outline: none;
+            user-select: none;
+        }
+        
+        details.settings-group summary:hover {
+            color: #4DA6FF;
+        }
+        
+        details.settings-group > *:not(summary) {
+            margin-top: 10px;
+        }
+
+        .help-text { 
+            padding: 12px; 
+            color: #A0A0A0; 
+            font-size: 12px; 
+            line-height: 1.5; 
+            background: #1e1f22;
+            border-left: 3px solid #4DA6FF;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .help-text p { margin: 0 0 8px 0; }
+        .help-text p:last-child { margin-bottom: 0; }
+        .help-text code { background: #2d2f36; padding: 2px 4px; border-radius: 3px; color: #E2E2E2; }
+
+        .tutorial-box { 
+            background: linear-gradient(145deg, #23252a, #1a1b1e); 
+            color: #E2E2E2; 
+            padding: 14px; 
+            border-radius: 8px; 
+            margin-top: 15px; 
+            border: 1px solid #2d2f36; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .tutorial-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .tutorial-box h4 { 
+            margin: 0 0 10px 0; 
+            color: #4DA6FF; 
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tutorial-box ul { padding-left: 18px; margin: 0; font-size: 12px; line-height: 1.6; }
         .tutorial-box li { margin-bottom: 6px; }
+        .tutorial-box li strong { color: #A8C7FA; }
+        
+        .link-box {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .tutorial-box a {
+            color: #4DA6FF;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s ease;
+        }
+        
+        .tutorial-box a:hover {
+            color: #A8C7FA;
+            text-decoration: underline;
+        }
+
         sdpi-textarea { --sdpi-textarea-height: 80px; }
+        
+        /* Modernize color inputs */
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: 1px solid #333;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
-    <sdpi-item label="Primary Stop Code">
+    <div class="section-title">Main Configuration</div>
+    
+    <sdpi-item label="Primary Stop">
         <sdpi-textfield setting="stopCode" placeholder="070106 (Default)"></sdpi-textfield>
-    </sdpi-item>
-
-    <sdpi-item label="Secondary Stop 2">
-        <sdpi-textfield setting="stopCode2" placeholder="(Optional)"></sdpi-textfield>
-    </sdpi-item>
-
-    <sdpi-item label="Secondary Stop 3">
-        <sdpi-textfield setting="stopCode3" placeholder="(Optional)"></sdpi-textfield>
-    </sdpi-item>
-
-    <sdpi-item label="Secondary Stop 4">
-        <sdpi-textfield setting="stopCode4" placeholder="(Optional)"></sdpi-textfield>
-    </sdpi-item>
-
-    <sdpi-item label="Secondary Stop 5">
-        <sdpi-textfield setting="stopCode5" placeholder="(Optional)"></sdpi-textfield>
     </sdpi-item>
 
     <sdpi-item label="Line Filters">
         <sdpi-textfield setting="lineFilters" placeholder="e.g. 856, 815"></sdpi-textfield>
     </sdpi-item>
+
+    <details class="settings-group">
+        <summary>Secondary Stops (Cycle with double tap)</summary>
+        <sdpi-item label="Stop 2">
+            <sdpi-textfield setting="stopCode2" placeholder="(Optional)"></sdpi-textfield>
+        </sdpi-item>
+        <sdpi-item label="Stop 3">
+            <sdpi-textfield setting="stopCode3" placeholder="(Optional)"></sdpi-textfield>
+        </sdpi-item>
+        <sdpi-item label="Stop 4">
+            <sdpi-textfield setting="stopCode4" placeholder="(Optional)"></sdpi-textfield>
+        </sdpi-item>
+        <sdpi-item label="Stop 5">
+            <sdpi-textfield setting="stopCode5" placeholder="(Optional)"></sdpi-textfield>
+        </sdpi-item>
+    </details>
+
+    <div class="section-title">Appearance</div>
 
     <sdpi-item label="Bus 1 Color">
         <input type="color" setting="busColor1" value="#004A77" />
@@ -48,34 +170,35 @@
         <input type="color" setting="busColor2" value="#E3963E" />
     </sdpi-item>
 
-    <sdpi-item label="Line Overrides">
+    <sdpi-item label="Overrides">
         <sdpi-textarea setting="lineConfigs" placeholder="856,#e34234,ΕΞΠΡΕΣ\n815,#2c9e4b,🚌"></sdpi-textarea>
     </sdpi-item>
 
-    <sdpi-item label="Dummy content">
-        <sdpi-checkbox setting="dummyData" title="Check for dummy content"></sdpi-checkbox>
+    <div class="section-title">Testing</div>
+    
+    <sdpi-item label="Mock Data">
+        <sdpi-checkbox setting="dummyData" title="Load fake data to test layout & colors"></sdpi-checkbox>
     </sdpi-item>
 
     <div class="help-text">
-        <p><strong>Line Filters:</strong> Comma-separated list of bus lines (e.g. "856, 815") to prioritize on the display.</p>
-        <p><strong>Line Overrides:</strong> Customize the color and text of a line's pill. Format: <code>LineID,Color,CustomText</code> (e.g., <code>856,#e34234,🚌</code>). Add one per line.</p>
+        <p><strong>Line Filters:</strong> Comma-separated list of bus lines (e.g. <code>856, 815</code>) to prioritize.</p>
+        <p><strong>Line Overrides:</strong> Customize the color and text of a line's badge. Format: <code>LineID,Color,CustomText</code> (e.g. <code>856,#e34234,🚌</code>). One per line.</p>
     </div>
 
     <div class="tutorial-box">
-        <h4>Controls & Tutorial</h4>
+        <h4>⚡ Controls</h4>
         <ul>
-            <li><strong>Short Press:</strong> Scrolls to the next page of buses (if more than 2 are arriving).</li>
-            <li><strong>Double Tap:</strong> Cycles to the next configured secondary stop.</li>
-            <li><strong>Long Press (Hold):</strong> Forces an immediate API refresh.</li>
-            <li><strong>Dummy Content:</strong> Use this toggle for testing and debugging colors without waiting for the API.</li>
+            <li><strong>Short Press:</strong> Scroll to next page of buses.</li>
+            <li><strong>Double Tap:</strong> Cycle to next secondary stop.</li>
+            <li><strong>Long Press (5s):</strong> Force manual refresh.</li>
         </ul>
     </div>
 
-    <div class="tutorial-box" style="margin-top: 10px;">
-        <h4>Useful Links</h4>
-        <ul>
-            <li><a href="#" onclick="window.open('https://github.com/MikeTsak/oasa-Stream-Deck'); return false;" style="color: #4da6ff; text-decoration: none;">GitHub Repository & Full README</a></li>
-        </ul>
+    <div class="tutorial-box link-box">
+        <a href="#" onclick="window.open('https://github.com/MikeTsak/oasa-Stream-Deck'); return false;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            GitHub & Documentation
+        </a>
     </div>
 </body>
 </html>

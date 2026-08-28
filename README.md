@@ -1,4 +1,4 @@
-# OASA Bus Arrival - Stream Deck Plugin 🚌
+# OASA Bus Arrivals - Stream Deck Plugin 🚌
 
 A powerful and highly customizable Stream Deck plugin for tracking live bus arrivals in Athens (OASA Telematics). Get real-time updates directly on your Stream Deck buttons, complete with beautiful SVG rendering, multi-stop support, and color-coded lines.
 
@@ -62,4 +62,4 @@ npm run pack
 ```
 
 ---
-*Made with ❤️ by miketsak.gr*
+*Made with ❤️ by MikeTsak*

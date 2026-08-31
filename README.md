@@ -21,8 +21,15 @@ Setting up your bus stop takes less than **1 minute**!
 
 To show arrival times, the plugin needs your 6-digit bus stop number (e.g. `070106`). Here are the **2 easy ways** to find it:
 
-#### 📱 Method A: Using the OASA Telematics Mobile App (Recommended)
-1. Open the **OASA Telematics** app on your phone (Android / iOS).
+#### 🌐 Method A: From the Web (Recommended)
+1. Go to the official website: **[telematics.oasa.gr](https://telematics.oasa.gr/)** on your browser.
+2. Search for your bus line or stop name, click on your stop, and copy its 6-digit code.
+   - *(Tip: You can also look directly at the metal OASA sign or smart telematics screen at your physical bus stop — the 6-digit code is always printed right at the top!)*
+
+---
+
+#### 📱 Method B: Using the OASA Telematics App (Android / iOS)
+1. Open the **OASA Telematics** app on your phone.
 2. In the search bar at the top, type the name of your stop (e.g. `Gefyraki` or `Syntagma`).
 3. Look at the search results: **the 6-digit number in parentheses is your Stop Code**!
    - *Example:* `GEFYRAKI (070106 - ΒΑΡΝΑΛΗ)` ➔ Your stop code is **`070106`**.
@@ -30,12 +37,6 @@ To show arrival times, the plugin needs your 6-digit bus stop number (e.g. `0701
 <p align="center">
   <img src="ReadMeImage/Screenshot_20260827-211032.png" alt="Finding Stop ID in OASA Telematics App" width="320" />
 </p>
-
----
-
-#### 🌐 Method B: From the Website or Physical Stop Sign
-- **On the Web:** Go to [telematics.oasa.gr](https://telematics.oasa.gr/), search for your bus line, click on your stop, and copy the 6-digit code.
-- **At the Bus Stop:** Look at the metal OASA sign or smart telematics display at your stop — the 6-digit stop code is printed right at the top!
 
 ---
 

@@ -1,72 +1,112 @@
 # OASA Bus Arrivals - Stream Deck Plugin 🚌
 
-A powerful, sleek, and highly customizable Stream Deck plugin for tracking live bus arrivals in Athens (OASA Telematics). Get real-time updates directly on your Stream Deck buttons with beautiful OLED-optimized SVG rendering, multi-stop cycling, scheduled departure fallbacks, and custom color-coded line overrides.
+Track live bus and trolley arrivals in Athens (OASA Telematics) directly on your Elgato Stream Deck button!
+
+Get real-time arrival countdowns, scheduled departure times, custom line colors, and the ability to cycle through multiple stops with a double-tap.
 
 ---
 
-## Features
+## 🚀 Quick Setup Guide (Step-by-Step)
 
-- 🕒 **Live ETAs & Smart Polling**: Fetches real-time bus arrivals straight from OASA Telematics via secure HTTPS every 90 seconds (1:30 min) with zero glitching or screen flickering on background updates.
-- 📅 **Scheduled Fallback**: If no live bus is currently en route, the plugin automatically fetches and displays the upcoming scheduled terminal departures.
-- 🎨 **Visual Customization**: Dynamically override line colors and badges (e.g., color-code express lines, trolley lines, or specific bus routes).
-- 🔄 **Multi-Stop Support**: Configure up to 5 different stops on a single key.
-- 📱 **Smooth Pagination**: Automatically paginates if more than 2 buses are arriving. Short-press the key to smoothly scroll to the next page.
-- ⏳ **Seamless Background Updates**: Background polls refresh data in place without interrupting your view. A clean spinner only appears on initial launch, stop changes, or when the API takes longer to respond.
-- ⚡ **Hold-to-Refresh**: Hold the button for 5 seconds to trigger an instant hard refresh with an animated progress ring.
-- 📊 **Status & Freshness Bar**: Displays a live timestamp and freshness dot (LIVE / STALE) on the bottom edge.
-- 🔧 **Dummy Mode**: Built-in toggle to test animations, layout, and colors without needing active bus data.
+Setting up your bus stop takes less than **1 minute**!
+
+### Step 1: Install the Plugin
+1. Download the latest `com.miketsakgr.oasa-bus.streamDeckPlugin` file from [Releases](https://github.com/MikeTsak/oasa-Stream-Deck/releases).
+2. Double-click the downloaded file — Elgato Stream Deck will install it automatically.
+3. In your Stream Deck app, find **OASA Bus** in the right sidebar and drag it onto any key.
 
 ---
 
-## Installation
+### Step 2: Find Your 6-Digit Stop Code 🚏
 
-1. Download the latest `.streamDeckPlugin` file from [Releases](https://github.com/MikeTsak/oasa-Stream-Deck/releases).
-2. Double-click the file to install it directly into the Elgato Stream Deck software.
-3. Drag and drop the **OASA Bus** action onto your canvas.
+To show arrival times, the plugin needs your 6-digit bus stop number (e.g. `070106`). Here are the **2 easy ways** to find it:
 
----
+#### 📱 Method A: Using the OASA Telematics Mobile App (Recommended)
+1. Open the **OASA Telematics** app on your phone (Android / iOS).
+2. In the search bar at the top, type the name of your stop (e.g. `Gefyraki` or `Syntagma`).
+3. Look at the search results: **the 6-digit number in parentheses is your Stop Code**!
+   - *Example:* `GEFYRAKI (070106 - ΒΑΡΝΑΛΗ)` ➔ Your stop code is **`070106`**.
 
-## Configuration & Usage
-
-Configure your widget directly inside the Stream Deck **Property Inspector**:
-
-### 1. Stop Codes
-- **Primary Stop Code**: Enter your 6-digit stop code from the OASA Telematics app / website (e.g., `070106`).
-- **Secondary Stops**: Add up to 4 additional stop codes. **Double-tap** the Stream Deck button to cycle between your saved stops instantly.
-
-### 2. Line Filters
-Only interested in specific buses at a multi-line stop? Enter a comma-separated list of line IDs (e.g., `856, 750, A15`) to filter out everything else.
-
-### 3. Line Overrides
-Customize line colors and badge text using the `LineID,Color,CustomText` format (one entry per line):
-
-```csv
-856,#00E5FF,856
-750,#FF6B00,ΑΤΤΙΚΟ
-049,#004A77,ΠΕΙΡΑΙΑΣ
-```
+<p align="center">
+  <img src="ReadMeImage/Screenshot_20260827-211032.png" alt="Finding Stop ID in OASA Telematics App" width="320" />
+</p>
 
 ---
 
-## Controls Summary
-
-| Action | Gesture | Description |
-|---|---|---|
-| **Paginate** | **Short Press (Single Tap)** | Smoothly scrolls to the next page of arrivals |
-| **Switch Stop** | **Double Tap** | Cycles to the next configured stop code |
-| **Hard Refresh** | **Long Press (Hold 5s)** | Shows an animated progress ring and triggers an immediate API fetch |
+#### 🌐 Method B: From the Website or Physical Stop Sign
+- **On the Web:** Go to [telematics.oasa.gr](https://telematics.oasa.gr/), search for your bus line, click on your stop, and copy the 6-digit code.
+- **At the Bus Stop:** Look at the metal OASA sign or smart telematics display at your stop — the 6-digit stop code is printed right at the top!
 
 ---
 
-## Development & Build
+### Step 3: Paste Your Stop Code in Stream Deck ⚡
 
-Built with TypeScript, Rollup, and standard SVG rendering with zero heavy dependencies.
+1. Click on the OASA Bus key in your Stream Deck software to open its settings below.
+2. Type or paste your 6-digit stop code into the **Primary Stop** box.
+3. That's it! Your Stream Deck key will immediately fetch and display the live bus arrivals!
+
+<p align="center">
+  <img src="ReadMeImage/Screenshot_3.png" alt="Entering Stop ID in Stream Deck" width="460" />
+</p>
+
+---
+
+## 🎮 How to Control Your Key
+
+| What you do | What happens |
+|---|---|
+| **Single Press (1 Tap)** | **Scrolls to the next buses** (if more than 2 buses are arriving at this stop) |
+| **Double Tap (2 Quick Clicks)** | **Switches to your next stop** (if you added secondary stops in settings) |
+| **Long Press (Hold for 5s)** | **Forces an immediate live refresh** (a green circle animation will show progress) |
+
+---
+
+## ⚙️ Extra Features & Customization (Optional)
+
+Click your button in the Stream Deck software to open the settings panel for optional power features:
+
+### 1. Multiple Stops on One Key
+Have a morning stop near your house and an afternoon stop near your office?
+- Open the **Secondary Stops** dropdown in settings.
+- Add up to 4 extra stop codes (Stop 2, Stop 3, Stop 4, Stop 5).
+- Simply **double-tap** your Stream Deck key anytime to cycle between them!
+
+### 2. Filter Specific Bus Lines
+If a stop has 10 different buses but you only take the `856` and `750`:
+- In the **Line Filters** box, write: `856, 750`
+- The key will only show arrival times for those specific lines.
+
+### 3. Custom Colors & Names (Line Overrides)
+Make your favorite buses stand out with custom colors and labels:
+- Under **Overrides**, write one line per bus in this format: `LineNumber,ColorHex,CustomLabel`
+- *Example:*
+  ```csv
+  856,#00E5FF,856
+  750,#FF6B00,ΑΤΤΙΚΟ
+  049,#004A77,ΠΕΙΡΑΙΑΣ
+  ```
+
+### 4. Testing Mode (Mock Data)
+Check the **Mock Data** box to preview animations and custom colors even when no buses are running late at night.
+
+---
+
+## ✨ Key Highlights
+
+- 🕒 **Always Accurate**: Automatically polls every 90 seconds (1:30 min) in the background with zero screen flickering.
+- 📅 **Scheduled Departures Fallback**: If a bus hasn't started its route yet, the widget automatically displays upcoming scheduled terminal departures.
+- 🔋 **OLED-Optimized**: Crisp, high-contrast dark design tailored for Elgato Stream Deck displays.
+- 🟢 **Live Status Indicator**: A subtle timestamp and live indicator on the bottom tells you exactly when data was updated.
+
+---
+
+## 🛠️ For Developers
 
 ```bash
 # Install dependencies
 npm install
 
-# Watch mode for development (auto-restarts Stream Deck plugin on build)
+# Watch mode (auto-rebuilds and restarts plugin on code changes)
 npm run watch
 
 # Production build

@@ -1,65 +1,81 @@
 # OASA Bus Arrivals - Stream Deck Plugin 🚌
 
-A powerful and highly customizable Stream Deck plugin for tracking live bus arrivals in Athens (OASA Telematics). Get real-time updates directly on your Stream Deck buttons, complete with beautiful SVG rendering, multi-stop support, and color-coded lines.
+A powerful, sleek, and highly customizable Stream Deck plugin for tracking live bus arrivals in Athens (OASA Telematics). Get real-time updates directly on your Stream Deck buttons with beautiful OLED-optimized SVG rendering, multi-stop cycling, scheduled departure fallbacks, and custom color-coded line overrides.
+
+---
 
 ## Features
 
-- 🕒 **Live ETAs**: Real-time arrival estimates straight from OASA.
-- 📅 **Scheduled Fallback**: If a live ETA isn't available, the plugin automatically fetches and displays the upcoming scheduled terminal departures.
-- 🎨 **Visual Customization**: Dynamically overrides colors and labels for specific bus lines (e.g., color-code express lines).
-- 🔄 **Multiple Stops**: Configure up to 5 different stops on a single button.
-- 📱 **Smooth Pagination**: Automatically paginates if more than 2 buses are arriving. Just press the button to smoothly scroll to the next page!
-- ⏳ **Loading Animations**: Displays a custom animated spinning loader directly on the key while fetching data from the API.
-- ⚡ **Instant Refresh**: Hold the button for 5 seconds to force a hard refresh from the API, complete with a visual countdown overlay.
-- 🔧 **Dummy Mode**: A built-in testing toggle to configure colors and UI without waiting for actual bus data.
+- 🕒 **Live ETAs & Smart Polling**: Fetches real-time bus arrivals straight from OASA Telematics via secure HTTPS every 90 seconds (1:30 min) with zero glitching or screen flickering on background updates.
+- 📅 **Scheduled Fallback**: If no live bus is currently en route, the plugin automatically fetches and displays the upcoming scheduled terminal departures.
+- 🎨 **Visual Customization**: Dynamically override line colors and badges (e.g., color-code express lines, trolley lines, or specific bus routes).
+- 🔄 **Multi-Stop Support**: Configure up to 5 different stops on a single key.
+- 📱 **Smooth Pagination**: Automatically paginates if more than 2 buses are arriving. Short-press the key to smoothly scroll to the next page.
+- ⏳ **Seamless Background Updates**: Background polls refresh data in place without interrupting your view. A clean spinner only appears on initial launch, stop changes, or when the API takes longer to respond.
+- ⚡ **Hold-to-Refresh**: Hold the button for 5 seconds to trigger an instant hard refresh with an animated progress ring.
+- 📊 **Status & Freshness Bar**: Displays a live timestamp and freshness dot (LIVE / STALE) on the bottom edge.
+- 🔧 **Dummy Mode**: Built-in toggle to test animations, layout, and colors without needing active bus data.
+
+---
 
 ## Installation
 
-1. Download the `.streamDeckPlugin` file from the [Releases](https://github.com/MikeTsak/oasa-Stream-Deck/releases).
-2. Double-click the file to install it into your Elgato Stream Deck software.
-3. Drag and drop the "OASA Bus" action onto your canvas.
+1. Download the latest `.streamDeckPlugin` file from [Releases](https://github.com/MikeTsak/oasa-Stream-Deck/releases).
+2. Double-click the file to install it directly into the Elgato Stream Deck software.
+3. Drag and drop the **OASA Bus** action onto your canvas.
+
+---
 
 ## Configuration & Usage
 
-Once added to your Stream Deck, you can configure it via the Property Inspector:
+Configure your widget directly inside the Stream Deck **Property Inspector**:
 
 ### 1. Stop Codes
-- **Primary Stop Code**: Find your stop code from the OASA Telematics website (e.g., `070106`).
-- **Secondary Stops**: Add up to 4 additional stop codes. **Double-tap** the Stream Deck button to quickly cycle between them!
+- **Primary Stop Code**: Enter your 6-digit stop code from the OASA Telematics app / website (e.g., `070106`).
+- **Secondary Stops**: Add up to 4 additional stop codes. **Double-tap** the Stream Deck button to cycle between your saved stops instantly.
 
 ### 2. Line Filters
-Only care about specific buses? Enter a comma-separated list of line IDs (e.g., `856, 815`) to prioritize them.
+Only interested in specific buses at a multi-line stop? Enter a comma-separated list of line IDs (e.g., `856, 750, A15`) to filter out everything else.
 
 ### 3. Line Overrides
-Completely customize how lines look on your button using the `LineID,Color,CustomText` format. Add one per line in the text area:
+Customize line colors and badge text using the `LineID,Color,CustomText` format (one entry per line):
+
 ```csv
-856,#e34234,ΕΞΠΡΕΣ
-815,#2c9e4b,🚌
-049,#004A77,PIRAEUS
+856,#00E5FF,856
+750,#FF6B00,ΑΤΤΙΚΟ
+049,#004A77,ΠΕΙΡΑΙΑΣ
 ```
 
-### Controls Summary
-- **Short Press**: Smoothly scrolls to the next page of buses (if more than 2 are arriving).
-- **Double Tap**: Cycles to the next configured secondary stop.
-- **Long Press (Hold for 5s)**: Triggers an expanding circle animation and forces an immediate API refresh.
+---
 
-## Development
+## Controls Summary
 
-Built with TypeScript and standard SVG generation. No heavy native dependencies required.
+| Action | Gesture | Description |
+|---|---|---|
+| **Paginate** | **Short Press (Single Tap)** | Smoothly scrolls to the next page of arrivals |
+| **Switch Stop** | **Double Tap** | Cycles to the next configured stop code |
+| **Hard Refresh** | **Long Press (Hold 5s)** | Shows an animated progress ring and triggers an immediate API fetch |
+
+---
+
+## Development & Build
+
+Built with TypeScript, Rollup, and standard SVG rendering with zero heavy dependencies.
 
 ```bash
 # Install dependencies
 npm install
 
-# Build for development (watch mode)
+# Watch mode for development (auto-restarts Stream Deck plugin on build)
 npm run watch
 
-# Build for production
+# Production build
 npm run build
 
-# Pack into a .streamDeckPlugin file
+# Package into .streamDeckPlugin
 npm run pack
 ```
 
 ---
-*Made with ❤️ by MikeTsak*
+
+*Made with ❤️ by [MikeTsak](https://miketsak.gr)*

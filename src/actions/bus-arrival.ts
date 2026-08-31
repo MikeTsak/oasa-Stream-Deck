@@ -24,6 +24,21 @@ interface BusData {
 	scheduledTerminalDepartures: string[];
 }
 
+interface RouteInfo {
+	lineId: string;
+	lineCode: string;
+	routeDescr: string;
+	lineDescr: string;
+}
+
+interface StopLineInfo {
+	lineId: string;
+	lineCode: string;
+	routeDescr: string;
+	lineDescr: string;
+	routeCode: string;
+}
+
 @action({ UUID: "com.miketsakgr.oasa-bus.arrival" })
 export class BusArrival extends SingletonAction<BusSettings> {
 	private intervals: Map<string, NodeJS.Timeout> = new Map();
@@ -39,6 +54,8 @@ export class BusArrival extends SingletonAction<BusSettings> {
 	private hasDoubleTapped: Map<string, boolean> = new Map();
 	private singleTapTimeout: Map<string, NodeJS.Timeout> = new Map();
 	private loadingAnimationInterval: Map<string, NodeJS.Timeout> = new Map();
+	private loadingDelayTimeout: Map<string, NodeJS.Timeout> = new Map();
+	private stopRoutesCache: Map<string, { timestamp: number; routes: Map<string, RouteInfo>; lines: StopLineInfo[] }> = new Map();
 
 	private getActiveStopCode(settings: BusSettings, index: number): string | undefined {
 		const stops = [settings.stopCode, settings.stopCode2, settings.stopCode3, settings.stopCode4, settings.stopCode5];
@@ -53,7 +70,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		}
 		this.currentPage.set(ev.action.id, 0);
 		this.activeStopIndex.set(ev.action.id, 0);
-		await this.fetchAndUpdate(ev.action, settings);
+		await this.fetchAndUpdate(ev.action, settings, true);
 		this.startPolling(ev.action.id, ev.action, settings);
 	}
 
@@ -78,18 +95,14 @@ export class BusArrival extends SingletonAction<BusSettings> {
 			clearTimeout(pendingTap);
 			this.singleTapTimeout.delete(ev.action.id);
 		}
-		const loadingInterval = this.loadingAnimationInterval.get(ev.action.id);
-		if (loadingInterval) {
-			clearInterval(loadingInterval);
-			this.loadingAnimationInterval.delete(ev.action.id);
-		}
+		this.stopLoadingAnimation(ev.action.id);
 	}
 
 	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<BusSettings>): Promise<void> {
 		this.stopPolling(ev.action.id);
 		const settings = ev.payload.settings;
 		if (settings.stopCode) {
-			await this.fetchAndUpdate(ev.action, settings);
+			await this.fetchAndUpdate(ev.action, settings, true);
 			this.startPolling(ev.action.id, ev.action, settings);
 		} else {
 			if (ev.action.isKey()) {
@@ -140,7 +153,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				}
 				
 				this.stopPolling(ev.action.id);
-				await this.fetchAndUpdate(ev.action, settings);
+				await this.fetchAndUpdate(ev.action, settings, true);
 				this.startPolling(ev.action.id, ev.action, settings);
 				return;
 			}
@@ -166,7 +179,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				}
 				
 				this.stopPolling(ev.action.id);
-				await this.fetchAndUpdate(ev.action, settings);
+				await this.fetchAndUpdate(ev.action, settings, true);
 				this.startPolling(ev.action.id, ev.action, settings);
 				return;
 			}
@@ -268,8 +281,8 @@ export class BusArrival extends SingletonAction<BusSettings> {
 
 	private startPolling(actionId: string, actionObj: KeyAction<BusSettings> | DialAction<BusSettings>, settings: BusSettings) {
 		const interval = setInterval(() => {
-			this.fetchAndUpdate(actionObj, settings);
-		}, 60000); // 60-second polling
+			this.fetchAndUpdate(actionObj, settings, false);
+		}, 90000); // 90-second (1:30 min) polling
 		this.intervals.set(actionId, interval);
 	}
 
@@ -281,29 +294,50 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		}
 	}
 
-	private async fetchAndUpdate(actionObj: KeyAction<BusSettings> | DialAction<BusSettings>, settings: BusSettings) {
-		if (actionObj.isKey()) {
-			// Clear any existing loading animation before starting a new one
-			const existingInterval = this.loadingAnimationInterval.get(actionObj.id);
-			if (existingInterval) {
-				clearInterval(existingInterval);
-				this.loadingAnimationInterval.delete(actionObj.id);
-			}
+	private startLoadingAnimation(actionObj: KeyAction<BusSettings> | DialAction<BusSettings>) {
+		if (!actionObj.isKey()) return;
+		this.stopLoadingAnimation(actionObj.id);
 
-			let frame = 0;
-			// Draw first frame immediately
-			const initialSvg = this.generateLoadingSVG(0, 0.6);
-			await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(initialSvg)}`).catch(() => {});
-			
-			const loadingInterval = setInterval(async () => {
-				frame++;
-				const rotation = (frame * 15) % 360;
-				// Math.sin goes -1 to 1. We want opacity between 0.15 and 0.6
-				const pulse = 0.15 + (Math.sin(frame * 0.2) + 1) * 0.225;
-				const loadingSvg = this.generateLoadingSVG(rotation, pulse);
-				await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(loadingSvg)}`).catch(() => {});
-			}, 50); // ~20fps
-			this.loadingAnimationInterval.set(actionObj.id, loadingInterval);
+		let frame = 0;
+		const initialSvg = this.generateLoadingSVG(0, 0.6);
+		actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(initialSvg)}`).catch(() => {});
+
+		const loadingInterval = setInterval(async () => {
+			frame++;
+			const rotation = (frame * 18) % 360;
+			const pulse = 0.2 + (Math.sin(frame * 0.25) + 1) * 0.2;
+			const loadingSvg = this.generateLoadingSVG(rotation, pulse);
+			await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(loadingSvg)}`).catch(() => {});
+		}, 100); // ~10fps
+		this.loadingAnimationInterval.set(actionObj.id, loadingInterval);
+	}
+
+	private stopLoadingAnimation(actionId: string) {
+		const timer = this.loadingDelayTimeout.get(actionId);
+		if (timer) {
+			clearTimeout(timer);
+			this.loadingDelayTimeout.delete(actionId);
+		}
+		const interval = this.loadingAnimationInterval.get(actionId);
+		if (interval) {
+			clearInterval(interval);
+			this.loadingAnimationInterval.delete(actionId);
+		}
+	}
+
+	private async fetchAndUpdate(actionObj: KeyAction<BusSettings> | DialAction<BusSettings>, settings: BusSettings, isExplicit: boolean = false) {
+		const existingData = this.lastData.get(actionObj.id);
+		const hasData = existingData !== undefined && existingData.length > 0;
+
+		if (!hasData || isExplicit) {
+			// Initial load or user action: show loading indicator immediately
+			this.startLoadingAnimation(actionObj);
+		} else {
+			// Background polling: keep previous display and only show loader if API hangs (>2000ms)
+			const timer = setTimeout(() => {
+				this.startLoadingAnimation(actionObj);
+			}, 2000);
+			this.loadingDelayTimeout.set(actionObj.id, timer);
 		}
 
 		let data: BusData[] = [];
@@ -334,113 +368,100 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				const activeIndex = this.activeStopIndex.get(actionObj.id) || 0;
 				const currentStopCode = this.getActiveStopCode(settings, activeIndex) || settings.stopCode;
 				
-				// 1. Fetch live arrivals
-				const res = await fetch(`http://telematics.oasa.gr/api/?act=getStopArrivals&p1=${currentStopCode}`, { signal: AbortSignal.timeout(8000) });
-				
-				if (!res.ok) {
+				if (!currentStopCode) {
 					hasError = true;
-					errorMessage = `HTTP Sφάλμα: ${res.status}`;
+					errorMessage = "Ορίστε κωδικό στάσης";
 				} else {
-					const rawArrivalsText = await res.text();
-					try {
-						const rawArrivals = JSON.parse(rawArrivalsText);
+					// 1. Get routes mapping for stop (cached)
+					const { routes: routesMap, lines: stopLines } = await this.getStopRoutes(currentStopCode);
 
-						if (Array.isArray(rawArrivals)) {
-							if (rawArrivals.length > 0) {
-								// 2. Filter lines
-								let selected = rawArrivals;
-								if (filters.length > 0) {
-									selected = rawArrivals.filter((arr: any) => filters.includes(arr.line_id));
-								}
-
-								// Deduplicate by line_id (we only want one panel per line)
-								const uniqueLines: any[] = [];
-								const seen = new Set();
-								for (const arr of selected) {
-									if (!seen.has(arr.line_id)) {
-										seen.add(arr.line_id);
-										uniqueLines.push(arr);
-									}
-								}
-
-								// For fetching schedules, we can fetch for all unique lines to support pagination
-								const linesToFetch = uniqueLines.slice(0, 6); // Max 6 lines to avoid spamming the API
-
-								// 3. For each line, fetch scheduled data
-								for (const arrival of linesToFetch) {
-									let terminalDepartures: string[] = [];
-									
-									try {
-										const schedRes = await fetch(`http://telematics.oasa.gr/api/?act=getDailySchedule&line_code=${arrival.route_code}`, { signal: AbortSignal.timeout(3000) });
-										const schedule = await schedRes.json();
-										
-										if (Array.isArray(schedule) && schedule.length > 0) {
-											const now = new Date();
-											const currentMinutes = now.getHours() * 60 + now.getMinutes();
-											
-											const futureDeps = schedule.filter((s: any) => {
-												const parts = s.sdc_code.split(':');
-												if (parts.length < 2) return false;
-												const [h, m] = parts.map(Number);
-												return (h * 60 + m) > currentMinutes;
-											});
-											
-											if (futureDeps.length >= 2) {
-												terminalDepartures = [futureDeps[0].sdc_code, futureDeps[1].sdc_code];
-											} else if (futureDeps.length === 1) {
-												terminalDepartures = [futureDeps[0].sdc_code];
-											}
-										}
-									} catch (e) {
-										console.log("Schedule API failed/timeout, cannot fetch schedule data", e);
-									}
-
-									// If btime2 is effectively empty or 0, we can treat it as null to trigger fallback
-									let liveEta = null;
-									if (arrival.btime2 && arrival.btime2.trim() !== "") {
-										liveEta = arrival.btime2;
-									}
-
-									data.push({
-										lineId: arrival.line_id,
-										etaMinutes: liveEta,
-										destination: "ΠΡΟΣ " + (arrival.dest_nme || "ΤΕΡΜΑ"),
-										routeCode: arrival.route_code,
-										scheduledTerminalDepartures: terminalDepartures
-									});
-								}
-								
-								// Sort data (Live first, then Scheduled, then by time)
-								data.sort((a, b) => {
-									const aIsLive = a.etaMinutes !== null;
-									const bIsLive = b.etaMinutes !== null;
-
-									if (aIsLive && !bIsLive) return -1;
-									if (!aIsLive && bIsLive) return 1;
-
-									if (aIsLive && bIsLive) {
-										return parseInt(a.etaMinutes!) - parseInt(b.etaMinutes!);
-									} else {
-										const aDep = a.scheduledTerminalDepartures[0] || "23:59";
-										const bDep = b.scheduledTerminalDepartures[0] || "23:59";
-										return aDep.localeCompare(bDep);
-									}
-								});
-							}
-						} else {
-							// Not an array - likely an error message from OASA
-							hasError = true;
-							errorMessage = "Άκυρα δεδομένα (Μη αναμενόμενη μορφή)";
-						}
-					} catch (e) {
+					// 2. Fetch live arrivals
+					const res = await fetch(`https://telematics.oasa.gr/api/?act=getStopArrivals&p1=${currentStopCode}`, { signal: AbortSignal.timeout(8000) });
+					
+					if (!res.ok) {
 						hasError = true;
-						errorMessage = "Άκυρα δεδομένα από OASA";
+						errorMessage = `HTTP Σφάλμα: ${res.status}`;
+					} else {
+						const rawArrivalsText = await res.text();
+						let rawArrivals = null;
+						try {
+							rawArrivals = JSON.parse(rawArrivalsText);
+						} catch (e) {
+							// Non-JSON or empty response
+						}
+
+						const arrivals = Array.isArray(rawArrivals) ? rawArrivals : [];
+						const processedLineIds = new Set<string>();
+
+						// Process live arrivals first
+						for (const arr of arrivals) {
+							const routeInfo = routesMap.get(arr.route_code);
+							const lineId = routeInfo?.lineId || arr.line_id || "BUS";
+
+							if (filters.length > 0 && !filters.includes(lineId)) continue;
+							if (processedLineIds.has(lineId)) continue;
+							processedLineIds.add(lineId);
+
+							const liveEta = (arr.btime2 && arr.btime2.trim() !== "") ? arr.btime2.trim() : null;
+							const dest = routeInfo?.routeDescr ? ("ΠΡΟΣ " + routeInfo.routeDescr) : ("ΠΡΟΣ " + (arr.dest_nme || "ΤΕΡΜΑ"));
+							const lineCode = routeInfo?.lineCode || "";
+
+							let terminalDepartures: string[] = [];
+							if (lineCode) {
+								terminalDepartures = await this.fetchSchedules(lineCode);
+							}
+
+							data.push({
+								lineId,
+								etaMinutes: liveEta,
+								destination: dest,
+								routeCode: arr.route_code,
+								scheduledTerminalDepartures: terminalDepartures
+							});
+						}
+
+						// If user filtered lines or if we have stop lines without live arrivals, add them as scheduled fallback
+						const linesToAdd = filters.length > 0
+							? stopLines.filter(l => filters.includes(l.lineId) && !processedLineIds.has(l.lineId))
+							: stopLines.filter(l => !processedLineIds.has(l.lineId)).slice(0, Math.max(0, 6 - data.length));
+
+						for (const sl of linesToAdd) {
+							processedLineIds.add(sl.lineId);
+							let terminalDepartures: string[] = [];
+							if (sl.lineCode) {
+								terminalDepartures = await this.fetchSchedules(sl.lineCode);
+							}
+							data.push({
+								lineId: sl.lineId,
+								etaMinutes: null,
+								destination: "ΠΡΟΣ " + (sl.routeDescr || "ΤΕΡΜΑ"),
+								routeCode: sl.routeCode,
+								scheduledTerminalDepartures: terminalDepartures
+							});
+						}
+
+						// Sort data: Live first, then Scheduled, then by time
+						data.sort((a, b) => {
+							const aIsLive = a.etaMinutes !== null;
+							const bIsLive = b.etaMinutes !== null;
+
+							if (aIsLive && !bIsLive) return -1;
+							if (!aIsLive && bIsLive) return 1;
+
+							if (aIsLive && bIsLive) {
+								return parseInt(a.etaMinutes!) - parseInt(b.etaMinutes!);
+							} else {
+								const aDep = a.scheduledTerminalDepartures[0] || "23:59";
+								const bDep = b.scheduledTerminalDepartures[0] || "23:59";
+								return aDep.localeCompare(bDep);
+							}
+						});
 					}
 				}
 			} catch (err: any) {
 				console.error("API Error:", err);
 				hasError = true;
-				if (err.name === 'TimeoutError') {
+				if (err.name === 'TimeoutError' || err.name === 'AbortError') {
 					errorMessage = "Timeout: Ο OASA δεν απαντά";
 				} else {
 					errorMessage = "Εκτός λειτουργίας (OASA Down)";
@@ -455,11 +476,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		const page = this.currentPage.get(actionObj.id) || 0;
 		
 		if (actionObj.isKey()) {
-			const interval = this.loadingAnimationInterval.get(actionObj.id);
-			if (interval) {
-				clearInterval(interval);
-				this.loadingAnimationInterval.delete(actionObj.id);
-			}
+			this.stopLoadingAnimation(actionObj.id);
 
 			await actionObj.setTitle(""); 
 			if (hasError) {
@@ -469,6 +486,80 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				const svg = this.generateLedSVG(data, page, page, 0, settings.lineConfigs, settings.busColor1, settings.busColor2, actionObj.id);
 				await actionObj.setImage(`data:image/svg+xml;charset=utf8,${encodeURIComponent(svg)}`);
 			}
+		}
+	}
+
+	private async getStopRoutes(stopCode: string): Promise<{ routes: Map<string, RouteInfo>; lines: StopLineInfo[] }> {
+		const cached = this.stopRoutesCache.get(stopCode);
+		if (cached && (Date.now() - cached.timestamp < 30 * 60 * 1000)) {
+			return { routes: cached.routes, lines: cached.lines };
+		}
+
+		const routes = new Map<string, RouteInfo>();
+		const lines: StopLineInfo[] = [];
+
+		try {
+			const res = await fetch(`https://telematics.oasa.gr/api/?act=webRoutesForStop&p1=${stopCode}`, { signal: AbortSignal.timeout(8000) });
+			if (res.ok) {
+				const data = await res.json() as any;
+				if (Array.isArray(data)) {
+					const seenLines = new Set<string>();
+					for (const r of data) {
+						if (!routes.has(r.RouteCode)) {
+							routes.set(r.RouteCode, {
+								lineId: r.LineID,
+								lineCode: r.LineCode,
+								routeDescr: r.RouteDescr,
+								lineDescr: r.LineDescr
+							});
+						}
+						if (!seenLines.has(r.LineID)) {
+							seenLines.add(r.LineID);
+							lines.push({
+								lineId: r.LineID,
+								lineCode: r.LineCode,
+								routeDescr: r.RouteDescr,
+								lineDescr: r.LineDescr,
+								routeCode: r.RouteCode
+							});
+						}
+					}
+				}
+			}
+		} catch (err) {
+			console.warn("Failed to fetch stop routes:", err);
+		}
+
+		const result = { timestamp: Date.now(), routes, lines };
+		this.stopRoutesCache.set(stopCode, result);
+		return { routes, lines };
+	}
+
+	private async fetchSchedules(lineCode: string): Promise<string[]> {
+		try {
+			const res = await fetch(`https://telematics.oasa.gr/api/?act=getDailySchedule&line_code=${lineCode}`, { signal: AbortSignal.timeout(3000) });
+			const sData = await res.json() as any;
+			const deps = [...(sData?.come || []), ...(sData?.go || [])];
+			const now = new Date();
+			const curMins = now.getHours() * 60 + now.getMinutes();
+
+			const times: { time: string; mins: number }[] = [];
+			for (const item of deps) {
+				const startStr = item.sde_start1 || item.sde_start2;
+				if (startStr) {
+					const timePart = startStr.split(' ')[1]?.slice(0, 5);
+					if (timePart) {
+						const [h, m] = timePart.split(':').map(Number);
+						if ((h * 60 + m) > curMins) {
+							times.push({ time: timePart, mins: h * 60 + m });
+						}
+					}
+				}
+			}
+			times.sort((a, b) => a.mins - b.mins);
+			return [...new Set(times.map(t => t.time))].slice(0, 2);
+		} catch (e) {
+			return [];
 		}
 	}
 
@@ -778,7 +869,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		// FIXED BOTTOM BAR — Status + Pagination (outside scroll)
 		// ═══════════════════════════════════════════════════════
 		if (fetchTime > 0) {
-			const isFresh = (Date.now() - fetchTime) < 70000;
+			const isFresh = (Date.now() - fetchTime) < 110000;
 			const sColor = isFresh ? '#3FB950' : '#D29922';
 			const sLabel = isFresh ? 'LIVE' : 'STALE';
 			const d = new Date(fetchTime);

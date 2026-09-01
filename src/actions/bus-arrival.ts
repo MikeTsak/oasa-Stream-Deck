@@ -376,11 +376,14 @@ export class BusArrival extends SingletonAction<BusSettings> {
 					const { routes: routesMap, lines: stopLines } = await this.getStopRoutes(currentStopCode);
 
 					// 2. Fetch live arrivals
-					const res = await fetch(`https://telematics.oasa.gr/api/?act=getStopArrivals&p1=${currentStopCode}`, { signal: AbortSignal.timeout(8000) });
+					const res = await fetch(`https://telematics.oasa.gr/api/?act=getStopArrivals&p1=${currentStopCode}`, { signal: AbortSignal.timeout(25000) });
 					
 					if (!res.ok) {
 						hasError = true;
 						errorMessage = `HTTP Σφάλμα: ${res.status}`;
+						const errText = await res.text().catch(() => 'N/A');
+						streamDeck.logger.error(`API Error: HTTP ${res.status} for stop ${currentStopCode}. Body: ${errText}`);
+						console.error(`API Error: HTTP ${res.status} for stop ${currentStopCode}. Body: ${errText}`);
 					} else {
 						const rawArrivalsText = await res.text();
 						let rawArrivals = null;
@@ -459,7 +462,8 @@ export class BusArrival extends SingletonAction<BusSettings> {
 					}
 				}
 			} catch (err: any) {
-				console.error("API Error:", err);
+				streamDeck.logger.error("API Error during fetchAndUpdate:", err);
+				console.error("API Error during fetchAndUpdate:", err);
 				hasError = true;
 				if (err.name === 'TimeoutError' || err.name === 'AbortError') {
 					errorMessage = "Timeout: Ο OASA δεν απαντά";
@@ -499,7 +503,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 		const lines: StopLineInfo[] = [];
 
 		try {
-			const res = await fetch(`https://telematics.oasa.gr/api/?act=webRoutesForStop&p1=${stopCode}`, { signal: AbortSignal.timeout(8000) });
+			const res = await fetch(`https://telematics.oasa.gr/api/?act=webRoutesForStop&p1=${stopCode}`, { signal: AbortSignal.timeout(25000) });
 			if (res.ok) {
 				const data = await res.json() as any;
 				if (Array.isArray(data)) {
@@ -527,6 +531,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 				}
 			}
 		} catch (err) {
+			streamDeck.logger.warn("Failed to fetch stop routes:", err);
 			console.warn("Failed to fetch stop routes:", err);
 		}
 
@@ -537,7 +542,7 @@ export class BusArrival extends SingletonAction<BusSettings> {
 
 	private async fetchSchedules(lineCode: string): Promise<string[]> {
 		try {
-			const res = await fetch(`https://telematics.oasa.gr/api/?act=getDailySchedule&line_code=${lineCode}`, { signal: AbortSignal.timeout(3000) });
+			const res = await fetch(`https://telematics.oasa.gr/api/?act=getDailySchedule&line_code=${lineCode}`, { signal: AbortSignal.timeout(25000) });
 			const sData = await res.json() as any;
 			const deps = [...(sData?.come || []), ...(sData?.go || [])];
 			const now = new Date();
@@ -559,6 +564,8 @@ export class BusArrival extends SingletonAction<BusSettings> {
 			times.sort((a, b) => a.mins - b.mins);
 			return [...new Set(times.map(t => t.time))].slice(0, 2);
 		} catch (e) {
+			streamDeck.logger.warn("Failed to fetch schedules:", e);
+			console.warn("Failed to fetch schedules:", e);
 			return [];
 		}
 	}
